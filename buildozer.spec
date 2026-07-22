@@ -17,7 +17,9 @@ icon.filename = %(source.dir)s/icon.png
 android.permissions = 
 android.api = 33
 android.minapi = 21
-android.archs = arm64-v8a, armeabi-v7a
+android.ndk = 25b
+android.archs = arm64-v8a
+android.accept_sdk_license = True
 
 [buildozer]
 log_level = 2
