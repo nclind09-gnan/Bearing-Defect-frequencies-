@@ -13,6 +13,8 @@ orientation = portrait
 fullscreen = 0
 
 icon.filename = %(source.dir)s/icon.png
+presplash.filename = %(source.dir)s/presplash.png
+android.presplash_color = #F4F7FB
 
 android.permissions = 
 android.api = 33
