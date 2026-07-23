@@ -480,6 +480,10 @@ class RootUI(BoxLayout):
         self.scroll.add_widget(self.body)
         self.add_widget(self.scroll)
 
+        footer = Label(text="Built by Gnaneswar", color=MUTED, font_size=sp(11),
+                       size_hint_y=None, height=dp(28))
+        self.add_widget(footer)
+
         self.catalog_tab = CatalogTab(app)
         self.custom_tab = CustomTab(app)
         self.severity_tab = SeverityTab(app)
@@ -710,3 +714,4 @@ if __name__ == "__main__":
             BearingScopeApp().run()
         except Exception:
             CrashApp(traceback.format_exc()).run()
+                      
