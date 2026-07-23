@@ -6,10 +6,36 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  sanity-check:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check files parse and import cleanly
+        run: |
+          python -c "import ast; ast.parse(open('main.py').read()); print('main.py OK')"
+          python -c "import ast; ast.parse(open('bearing_data.py').read()); print('bearing_data.py OK')"
+          python -c "import bearing_data; print('bearing_data imports OK,', len(bearing_data.DATA['data']), 'brands')"
+
+  build:
+    needs: sanity-check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -19,7 +45,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip \
+          sudo apt install -y git zip unzip python3-pip \
             autoconf libtool pkg-config zlib1g-dev libncurses-dev \
             libncursesw5-dev cmake libffi-dev libssl-dev build-essential
 
@@ -29,11 +55,15 @@ jobs:
           pip install buildozer cython==0.29.36
 
       - name: Build APK with Buildozer
+        env:
+          JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
         run: |
           yes | buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
+          name: bearing-freq-scope-apk
+          path: bin/*.apk        with:
           name: bearing-freq-scope-apk
           path: bin/*.apk
