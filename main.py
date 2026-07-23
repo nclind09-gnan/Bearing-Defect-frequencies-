@@ -439,7 +439,7 @@ class RootUI(BoxLayout):
         speed_card.add_widget(Label(text="SHAFT SPEED\n(RPM)", color=MUTED, bold=True,
                                      font_size=sp(11), halign="left"))
         self.rpm_input = TextInput(text="1750", multiline=False, input_filter="float",
-                                    font_size=sp(20), bold=True, foreground_color=BLUE,
+                                    font_size=sp(20), foreground_color=BLUE,
                                     size_hint_x=0.5)
         self.rpm_input.bind(text=lambda *_: self.refresh())
         speed_card.add_widget(self.rpm_input)
