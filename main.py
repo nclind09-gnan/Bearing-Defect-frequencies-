@@ -8,6 +8,7 @@ no internet needed once installed.
 """
 
 import math
+import traceback
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.metrics import dp, sp
@@ -22,7 +23,12 @@ from kivy.uix.spinner import Spinner
 from kivy.uix.widget import Widget
 from kivy.graphics import Color, Rectangle, Line
 
-from bearing_data import DATA
+_IMPORT_ERROR = None
+try:
+    from bearing_data import DATA
+except Exception:
+    _IMPORT_ERROR = traceback.format_exc()
+    DATA = {"data": {}, "labels": {}}  # placeholder so the rest of the file can still load
 
 # ---------------------------------------------------------------- palette --
 WHITE = (1, 1, 1, 1)
@@ -667,6 +673,40 @@ class BearingScopeApp(App):
         self.ui.refresh()
 
 
-if __name__ == "__main__":
-    BearingScopeApp().run()
+class CrashApp(App):
+    """Minimal fallback app: if anything goes wrong, show the error ON
+    SCREEN (scrollable, selectable-by-screenshot) instead of just closing.
+    No logcat, no permissions, no computer needed to read it."""
 
+    def __init__(self, error_text, **kwargs):
+        super().__init__(**kwargs)
+        self.error_text = error_text
+
+    def build(self):
+        Window.clearcolor = (0.05, 0.05, 0.08, 1)
+        root = BoxLayout(orientation="vertical", padding=dp(16), spacing=dp(10))
+        root.add_widget(Label(
+            text="App failed to start \u2014 screenshot everything below\nand send it in the chat:",
+            color=(1, 0.4, 0.4, 1), bold=True, font_size=sp(16),
+            size_hint_y=None, height=dp(60), halign="left", valign="top",
+        ))
+        scroll = ScrollView()
+        error_label = Label(
+            text=self.error_text, color=(1, 1, 1, 1), font_size=sp(13),
+            size_hint_y=None, halign="left", valign="top",
+            text_size=(Window.width - dp(32), None),
+        )
+        error_label.bind(texture_size=lambda w, ts: setattr(w, "height", ts[1]))
+        scroll.add_widget(error_label)
+        root.add_widget(scroll)
+        return root
+
+
+if __name__ == "__main__":
+    if _IMPORT_ERROR:
+        CrashApp(_IMPORT_ERROR).run()
+    else:
+        try:
+            BearingScopeApp().run()
+        except Exception:
+            CrashApp(traceback.format_exc()).run()
