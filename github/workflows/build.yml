@@ -6,7 +6,22 @@ on:
   workflow_dispatch:
 
 jobs:
+  sanity-check:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check files parse and import cleanly
+        run: |
+          python -c "import ast; ast.parse(open('main.py').read()); print('main.py OK')"
+          python -c "import ast; ast.parse(open('bearing_data.py').read()); print('bearing_data.py OK')"
+          python -c "import bearing_data; print('bearing_data imports OK,', len(bearing_data.DATA['data']), 'brands')"
+
   build:
+    needs: sanity-check
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
